@@ -1,7 +1,7 @@
 import yfinance as yf
 import numpy as np
 from datetime import datetime
-from blackscholes import black_scholes
+from .blackscholes import black_scholes
 
 def check_optype(op_type):
     if (op_type not in ['p','c','s']):
