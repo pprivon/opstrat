@@ -11,6 +11,7 @@ df = pd.DataFrame(data, columns=header)
 #print(df)
 
 multi_plotter(spot=212.26,spot_range=10, exp_adjust_date='15-Sep-23', op_list=df, show_individual=False, graph_header = "AAPL Risk Graph")
+
 # op1={'op_type': 'c', 'strike': 215, 'tr_type': 's', 'op_pr': 7.63, 'contract': 1, 'exp_date':'15-Sep-23'}
 # op2={'op_type': 'p', 'strike': 220, 'tr_type': 'b', 'op_pr': 5.35, 'contract': 1, 'exp_date':'15-Sep-23'}
 # op3={'op_type': 'p', 'strike': 210, 'tr_type': 's', 'op_pr': 7.20, 'contract': 1, 'exp_date':'08-Sep-23'}
