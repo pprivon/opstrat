@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import datetime
+import pandas as pd
 
 from .helpers import payoff_calculator, check_optype, check_trtype, calculate_days_to_exp
 
@@ -26,9 +27,9 @@ def multi_plotter(spot_range=20, spot=100,
     spot_range: int, float, optional, default: 20
        Range of spot variation in percentage 
        
-    op_list: list of dictionary
+    op_list: dataframe for option/stock legs
        
-       Each dictionary must contiain following keys
+       Each dataframe must contiain following columns
        'strike': int, float, default: 720
            Strike Price
        'tr_type': kind {'b', 's'} default:'b'
@@ -88,90 +89,52 @@ def multi_plotter(spot_range=20, spot=100,
     if exp_adjust > 0:
         y_exp_list=[]
     
-    for op in op_list:
-        # Prepare Variables to be used by Payoff Calculator Function
-        op_type=str.lower(op['op_type'])
-        tr_type=str.lower(op['tr_type'])
-        check_optype(op_type)
-        check_trtype(tr_type)
-        
-        strike=op['strike']
-        op_pr=op['op_pr']
-        
-        # Adjust Contract Qty if Stock leg to equivalent contracts from shares of stock
-        try:
-            if op_type == 's':
-                contract=op['contract']/100
-            else:
-                contract=op['contract']
-            
-        except:
-            contract=1
-        
-        # Calculate Days to Expiration from Expiration Date
-        try:
-            if op_type == 's':
-                days_to_expiration = 0
-            else:
-                # Get Days to Expiration for Each Option Leg
-                days_to_expiration = calculate_days_to_exp(op['exp_date'])
-                
-                # Calculate Adjusted Days to Expiration
-                if exp_adjust > 0:
-                    days_to_expiration_adjusted = days_to_expiration - exp_adjust
-
-        except:
-            days_to_expiration = 0 
-        
+    # Add New Columns used by this Function
+    op_list['contract_equiv'] = op_list['contracts']
+    op_list['days_to_expiration'] = 0
+    op_list['days_to_expiration_adjusted'] = 0
+    
+    # Adjust Contract Qty if Stock leg to equivalent contracts from shares of stock
+    op_list['contract_equiv'].mask(op_list['op_type'] == 's', op_list['contract_equiv']/100, inplace=True)
+    
+    # Calculate Days to Expiration from Individual Leg Expiration Dates
+    op_list['days_to_expiration'] = [calculate_days_to_exp(exp_date) for exp_date in op_list['exp_date']]
+    
+    # Set Days to Expiration to 0 for Stock Legs
+    op_list['days_to_expiration'].mask(op_list['op_type'] == 's', 0, inplace=True)
+    
+    if exp_adjust > 0:
+        # Calculate Days to Expiration from Individual Leg Expiration Dates
+        op_list['days_to_expiration_adjusted'] = [(days_to_expiration - exp_adjust) for days_to_expiration in op_list['days_to_expiration']]
+    
+        # Set Days to Expiration to 0 for Stock Legs
+        op_list['days_to_expiration_adjusted'].mask(op_list['op_type'] == 's', 0, inplace=True)
+    
+    for i, row in op_list.iterrows():    
+  
         # Calculate Payoff Prices for each x Underlying Price Value with Days to Expiration
-        y_list.append(payoff_calculator(x, op_type, strike, op_pr, tr_type, contract, days_to_expiration, r, v))
+        y_list.append(payoff_calculator(x, row['op_type'], row['strike'], row['op_pr'], row['tr_type']
+            , row['contracts'], row['days_to_expiration'], r, v ))
 
         # Calculate Payoff Prices with Adjusted Days to Expiration
         if exp_adjust > 0:
-            y_exp_list.append(payoff_calculator(x, op_type, strike, op_pr, tr_type, contract, days_to_expiration_adjusted, r, v))
-        
-    # y_exp_list=[]
-    # for op in op_list:
-    #     op_type=str.lower(op['op_type'])
-    #     tr_type=str.lower(op['tr_type'])
-    #     check_optype(op_type)
-    #     check_trtype(tr_type)
-        
-    #     strike=op['strike']
-    #     op_pr=op['op_pr']
-    #     try:
-    #         if op_type == 's':
-    #             contract=op['contract']/100
-    #         else:
-    #             contract=op['contract']
-            
-    #     except:
-    #         contract=1
-        
-    #     try:
-    #         if op_type == 's':
-    #             days_to_expiration = 0
-    #         else:
-    #             days_to_expiration = calculate_days_to_exp(op['exp_date']) - min_exp
-    #     except:
-    #         days_to_expiration = 0 
-            
-    #     y_exp_list.append(payoff_calculator(x, op_type, strike, op_pr, tr_type, contract, days_to_expiration, r, v))
+           y_exp_list.append(payoff_calculator(x, row['op_type'], row['strike'], row['op_pr'], row['tr_type']
+            , row['contracts'], row['days_to_expiration_adjusted'], r, v ))
 
     def plotter():
         y=0
         y_exp=0
         plt.figure(figsize=(10,6))
         
-        for i in range (len(op_list)):
+        for i, row in op_list.iterrows():
             try:
-                contract=str(op_list[i]['contract'])  
+                contract=str(row['contracts'])  
             except:
                 contract='1'
                 
             # Plot Indiivdual Price Leg Payoff Diagram
             if show_individual == True:
-                label=contract+' '+str(abb[op_list[i]['tr_type']])+' '+str(abb[op_list[i]['op_type']])+' ST: '+str(op_list[i]['strike'])
+                label=contract+' '+str(abb[row['tr_type']])+' '+str(abb[row['op_type']])+' ST: '+str(row['strike'])
                 sns.lineplot(x=x, y=y_list[i], label=label, alpha=0.5)
             
             # Add individual leg price to combined leg
@@ -203,3 +166,4 @@ def multi_plotter(spot_range=20, spot=100,
         plt.show()
 
     plotter()      
+    

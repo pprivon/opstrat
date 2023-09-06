@@ -1,4 +1,4 @@
-from .opstrat import multi_plotter
+from ../opstrat/basic_multi import multi_plotter
 import pandas as pd
 
 header = ['strike', 'tr_type', 'op_pr', 'op_type', 'contracts', 'exp_date']
@@ -29,18 +29,3 @@ multi_plotter(spot=212.26,spot_range=10, exp_adjust_date='15-Sep-23', op_list=df
 
 # op.single_plotter(spot=212.26, spot_range=10, strike=210, op_type='s', tr_type='s', op_pr=0)
 # op.single_plotter(spot=212.26, spot_range=10, strike=210, op_type='s', tr_type='b', op_pr=0)
-
-if __name__ == '__main__':
-    header = ['strike', 'tr_type', 'op_pr', 'op_type', 'contracts', 'exp_date']
-    data = [[215,'s',7.63,'c',1,'08-Sep-23']
-#            ,[220,'b',5.35,'p',1,'15-Sep-23']
-#            ,[220,'b',0,'s',200,'15-Sep-23']
-            ]
-
-    df = pd.DataFrame(data, columns=header)
-
-    #print(df)
-
-    multi_plotter(spot=212.26,spot_range=10, op_list=df, show_individual=False, graph_header = "AAPL Risk Graph")
-    multi_plotter(spot=212.26,spot_range=10, exp_adjust_date='08-Sep-23', op_list=df, show_individual=True, graph_header = "AAPL Risk Graph")
-    #multi_plotter(spot=212.26,spot_range=10, exp_adjust_date='15-Sep-23', op_list=df, show_individual=False, graph_header = "AAPL Risk Graph")
