@@ -4,8 +4,8 @@ from datetime import datetime
 from .blackscholes import black_scholes
 
 def check_optype(op_type):
-    if (op_type not in ['p','c','s']):
-        raise ValueError("Input 'p' for put, 'c' for call, 's' for stock!")
+    if (op_type not in ['p','c','st']):
+        raise ValueError("Input 'p' for put, 'c' for call, 'st' for stock!")
 
 def check_trtype(tr_type):
     if (tr_type not in ['b','s']):
@@ -30,9 +30,9 @@ def payoff_calculator(x, op_type, strike, op_pr, tr_type, n, days_to_expiration,
     y=[]
     
     # If Leg is a Stock - calculate payoff graph for a stock position
-    if op_type=='s':
+    if op_type=='st':
         for i in range(len(x)):
-            y.append(x[i]-strike-op_pr)
+            y.append(x[i]-strike)
             
     # If Leg is an Option and Future Expiration, - calculate value of option using Black Scholes Pricing Model
     elif days_to_expiration > 0:
