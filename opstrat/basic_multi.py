@@ -140,12 +140,12 @@ def multi_plotter(spot_range, spot, op_list,
         
         # Calculate Payoff Prices for each x Underlying Price Value with Days to Expiration
         y_list.append(payoff_calculator(x, row['op_type'], row['strike'], row['op_pr'], row['tr_type']
-            , row['contracts'], row['days_to_expiration'], r, v ))
+            , row['contract_equiv'], row['days_to_expiration'], r, v ))
 
         # Calculate Payoff Prices with Adjusted Days to Expiration
         if exp_adjust > 0:
            y_exp_list.append(payoff_calculator(x, row['op_type'], row['strike'], row['op_pr'], row['tr_type']
-            , row['contracts'], row['days_to_expiration_adjusted'], r, v ))
+            , row['contract_equiv'], row['days_to_expiration_adjusted'], r, v ))
 
     def plotter():
                       
@@ -229,4 +229,3 @@ def multi_plotter(spot_range, spot, op_list,
             return
     else:
         plotter()      
-    
