@@ -9,6 +9,7 @@ from .helpers import payoff_calculator, check_optype, check_trtype, calculate_da
 
 abb={'c': 'Call',
     'p': 'Put',
+    'st': 'Stock',
     'b': 'Long',
     's': 'Short'}
 
@@ -37,7 +38,7 @@ def multi_plotter(spot_range, spot, op_list,
        'op_pr': int, float, default: 10
           Option Price
        'op_type': kind {'c','p','s'}, default:'c'
-          Opion type>> 'c': call option, 'p':put option, 's':stock
+          Option type>> 'c': call option, 'p':put option, 's':stock
        'contracts': int default:1, optional
            Number of contracts
         'exp_date': str, default '01-Jan-2023'
@@ -115,21 +116,24 @@ def multi_plotter(spot_range, spot, op_list,
     op_list['days_to_expiration'] = 0
     op_list['days_to_expiration_adjusted'] = 0
     
+    # Convert op_type == 's' to op_type = 'st'
+    op_list['op_type'].mask(op_list['op_type'] == 's', 'st', inplace=True)
+    
     # Adjust Contract Qty if Stock leg to equivalent contracts from shares of stock
-    op_list['contract_equiv'].mask(op_list['op_type'] == 's', op_list['contract_equiv']/100, inplace=True)
+    op_list['contract_equiv'].mask(op_list['op_type'] == 'st', op_list['contract_equiv']/100, inplace=True)
+    
+    # Set Days to Expiration to 0 for Stock Legs
+    op_list['days_to_expiration'].mask(op_list['op_type'] != 'st', 1, inplace=True)
     
     # Calculate Days to Expiration from Individual Leg Expiration Dates
     op_list['days_to_expiration'] = [calculate_days_to_exp(exp_date) for exp_date in op_list['exp_date']]
     
-    # Set Days to Expiration to 0 for Stock Legs
-    op_list['days_to_expiration'].mask(op_list['op_type'] == 's', 0, inplace=True)
-    
     if exp_adjust > 0:
         # Calculate Days to Expiration from Individual Leg Expiration Dates
-        op_list['days_to_expiration_adjusted'] = [(days_to_expiration - exp_adjust) for days_to_expiration in op_list['days_to_expiration']]
+        op_list['days_to_expiration_adjusted'] = [max((days_to_expiration - exp_adjust),0) for days_to_expiration in op_list['days_to_expiration']]
     
         # Set Days to Expiration to 0 for Stock Legs
-        op_list['days_to_expiration_adjusted'].mask(op_list['op_type'] == 's', 0, inplace=True)
+        op_list['days_to_expiration_adjusted'].mask(op_list['op_type'] == 'st', 0, inplace=True)
     
     # for id in transaction_id_list:
     for i, row in op_list.iterrows():    
@@ -225,3 +229,4 @@ def multi_plotter(spot_range, spot, op_list,
             return
     else:
         plotter()      
+    

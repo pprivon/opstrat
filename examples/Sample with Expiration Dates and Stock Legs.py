@@ -68,3 +68,54 @@ if __name__ == '__main__':
 #    multi_plotter(spot=215,spot_range=10, exp_adjust_date='17-Nov-23', op_list=df_total, show_individual=True, show_transaction=True, show_combined=True, graph_header = "Risk Graph")
     
     #multi_plotter(spot=212.26,spot_range=10, exp_adjust_date='15-Sep-23', op_list=df, show_individual=False, graph_header = "AAPL Risk Graph")
+    
+header = ['transaction_id','strike', 'op_type', 'exp_date',  'op_pr', 'tr_type', 'contracts']
+body = [
+    ['23-08-02B',   96.5,       's',  '         ',    0.0,       'b',      1200,]
+    ['23-08-02B',   97.5,       's',  '         ',    0.0,       'b',       400,]
+    ['23-08-02B',   98.0,       's',  '         ',    0.0,       'b',       400,]
+    ['23-08-02B',   94.0,       'p',  '29-Sep-23',    0.0,       'b',         8,]
+    ['23-08-02B',   96.0,       'p',  '29-Sep-23',    0.0,       'b',         8,]
+    ['23-08-02B',   95.5,       'p',  ' 8-Sep-23',    0.0,       's',         4,]
+    ['23-08-03A',   92.0,       'p',  '29-Sep-23',    0.0,       'b',         8,]
+    ['23-08-03A',   94.0,       'p',  '29-Sep-23',    0.0,       'b',         8,]
+    ['23-08-03A',   95.5,       'p',  ' 8-Sep-23',    0.0,       's',         6,]
+    ['23-08-03A',   96.0,       'p',  ' 8-Sep-23',    0.0,       's',         4,]
+    ['23-08-15C',   91.0,       'p',  '29-Sep-23',    0.0,       'b',         4,]
+    ['23-08-15C',   93.0,       'p',  '29-Sep-23',    0.0,       'b',         4,]
+    ['23-08-21A',   92.0,       'p',  '20-Oct-23',    0.0,       'b',        12,]
+    ['23-08-21A',   94.0,       'p',  ' 8-Sep-23',    0.0,       's',         6,]
+    ['23-08-22A',   95.0,       'c',  '20-Oct-23',    0.0,       'b',         6,]
+    ['23-08-22A',   99.0,       'c',  '20-Oct-23',    0.0,       'b',         6,]
+    ['23-08-22A',   95.0,       'c',  ' 8-Sep-23',    0.0,       's',        12,]
+]
+
+df_tlt = pd.DataFrame(body, columns=header)
+multi_plotter(spot=215,spot_range=10, exp_adjust_date='17-Nov-23', op_list=df_total, show_individual=False, show_transaction=True, show_combined=True, graph_header = "Risk Graph")
+
+
+if __name__ == '__main__':
+    header = ['transaction_id','strike', 'op_type', 'exp_date',  'op_pr', 'tr_type', 'contracts']
+    body = [
+        ['23-08-02B',   96.5,       's',  '',    0.0,       'b',      1200,],
+        ['23-08-02B',   97.5,       's',  '',    0.0,       'b',       400,],
+        ['23-08-02B',   98.0,       's',  '',    0.0,       'b',       400,],
+        ['23-08-02B',   94.0,       'p',  '29-Sep-23',    0.0,       'b',         8,],
+        ['23-08-02B',   96.0,       'p',  '29-Sep-23',    0.0,       'b',         8,],
+        ['23-08-02B',   95.5,       'p',  '8-Sep-23',    0.0,       's',         4,],
+        # ['23-08-03A',   92.0,       'p',  '29-Sep-23',    0.0,       'b',         8,],
+        # ['23-08-03A',   94.0,       'p',  '29-Sep-23',    0.0,       'b',         8,],
+        # ['23-08-03A',   95.5,       'p',  '8-Sep-23',    0.0,       's',         6,],
+        # ['23-08-03A',   96.0,       'p',  '8-Sep-23',    0.0,       's',         4,],
+        # ['23-08-15C',   91.0,       'p',  '29-Sep-23',    0.0,       'b',         4,],
+        # ['23-08-15C',   93.0,       'p',  '29-Sep-23',    0.0,       'b',         4,],
+        # ['23-08-21A',   92.0,       'p',  '20-Oct-23',    0.0,       'b',        12,],
+        # ['23-08-21A',   94.0,       'p',  '8-Sep-23',    0.0,       's',         6,],
+        # ['23-08-22A',   95.0,       'c',  '20-Oct-23',    0.0,       'b',         6,],
+        # ['23-08-22A',   99.0,       'c',  '20-Oct-23',    0.0,       'b',         6,],
+        # ['23-08-22A',   95.0,       'c',  '8-Sep-23',    0.0,       's',        12,],
+    ]
+
+    df_tlt = pd.DataFrame(body, columns=header)
+    multi_plotter(spot=93.8,spot_range=10, exp_adjust_date='08-Sep-23', op_list=df_tlt,
+                  show_individual=True, show_transaction=True, show_combined=False, graph_header = "Risk Graph")

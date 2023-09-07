@@ -12,16 +12,19 @@ def check_trtype(tr_type):
         raise ValueError("Input 'b' for Buy and 's' for Sell!")  
 
 def calculate_days_to_exp(exp_date_str):
-    # Convert the future date string to a datetime object
-    exp_date = datetime.strptime(exp_date_str, "%d-%b-%y")
-        
-    # Get today's date as a datetime object
-    today_date = datetime.now()
-        
-    # Calculate the difference in days
-    days_to_exp = (exp_date - today_date).days + 1
-    
-    return days_to_exp
+    if exp_date_str == '':
+        return 0
+    else:
+        # Convert the future date string to a datetime object
+        exp_date = datetime.strptime(exp_date_str, "%d-%b-%y")
+
+        # Get today's date as a datetime object
+        today_date = datetime.now()
+
+        # Calculate the difference in days
+        days_to_exp = (exp_date - today_date).days + 1
+
+        return days_to_exp
 
 def payoff_calculator(x, op_type, strike, op_pr, tr_type, n, days_to_expiration, r, v):
     y=[]
