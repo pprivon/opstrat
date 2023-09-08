@@ -2,7 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from datetime import datetime
+from datetime import date
 import pandas as pd
 
 from .helpers import payoff_calculator, check_optype, check_trtype, calculate_days_to_exp
@@ -14,7 +14,9 @@ abb={'c': 'Call',
     's': 'Short'}
 
 def multi_plotter(spot_range, spot, op_list, 
-                  exp_adjust_date="",save=False, file='fig.png', v=20, r=5.3, show_individual=False, show_transaction=True, show_combined=True, graph_header='Multiple Options Plotter'):
+                  exp_adjust_date='',save=False, file='fig.png', v=20, r=5.3
+                  , show_individual=False, show_transaction=True, show_combined=True
+                  , graph_header='Multiple Options Plotter', y_adjust=0):
     """
     Plots a basic option payoff diagram for a multiple options and resultant payoff diagram
     
@@ -71,6 +73,9 @@ def multi_plotter(spot_range, spot, op_list,
     graph_header: String, Default: Multiple Options Plotter
         Allows User to Pass in Chart Header Variable
         
+    y_adjust: Float, Default: 0
+        Adjustment to the entire chart y-axis. This could reflect an overall portfolio breakeven when individual option costs are valued at 0.
+
     Example
     -------
     op1={'op_type':'c','strike':110,'tr_type':'s','op_pr':2,'contract':1}
@@ -82,6 +87,9 @@ def multi_plotter(spot_range, spot, op_list,
     #Plots option payoff diagrams for each op1 and op2 and combined payoff
     
     """
+    
+    op_list.drop(columns=op_list.columns.difference(['strike', 'op_type', 'exp_date', 'op_pr', 'tr_type', 'contracts', 'transaction_id']), inplace=True)
+    
     # Validate Correct Columns Present in Dataframe
     required_columns = ['strike', 'op_type', 'exp_date', 'op_pr', 'tr_type', 'contracts']
     optional_columns_str = ['transaction_id']
@@ -94,6 +102,23 @@ def multi_plotter(spot_range, spot, op_list,
         if i not in op_list:
             op_list[i] = ''
 
+    # Add y-adjust Breakeven Profit Level
+    df_pl = pd.DataFrame( 
+        {
+            'transaction_id': 'Current Pos P/L',
+            'strike': 0,
+            'op_type': '',
+            'exp_date': exp_adjust_date if exp_adjust_date!= '' else date.today().strftime('%d-%b-%y'),
+            'op_pr': y_adjust,
+            'tr_type': '',
+            'contracts': 1
+        },
+        index=[0]
+    )
+    
+    op_list = pd.concat([op_list, df_pl], ignore_index = True)
+    op_list.reset_index()
+    
     # Sort Values by Transaction ID Column
     op_list.sort_values('transaction_id', inplace=True)
 
@@ -137,16 +162,22 @@ def multi_plotter(spot_range, spot, op_list,
     
     # for id in transaction_id_list:
     for i, row in op_list.iterrows():    
+        if row['transaction_id'] != 'Current Pos P/L':
+            # Calculate Payoff Prices for each x Underlying Price Value with Days to Expiration
+            y_list.append(payoff_calculator(x, row['op_type'], row['strike'], row['op_pr'], row['tr_type']
+                , row['contract_equiv'], row['days_to_expiration'], r, v ))
+
+            # Calculate Payoff Prices with Adjusted Days to Expiration
+            if exp_adjust > 0:
+               y_exp_list.append(payoff_calculator(x, row['op_type'], row['strike'], row['op_pr'], row['tr_type']
+                , row['contract_equiv'], row['days_to_expiration_adjusted'], r, v ))
+
+        else:
+            y = []
+            for i in range(len(x)):
+                y.append(row['op_pr'])
+            y_list.append(y)
         
-        # Calculate Payoff Prices for each x Underlying Price Value with Days to Expiration
-        y_list.append(payoff_calculator(x, row['op_type'], row['strike'], row['op_pr'], row['tr_type']
-            , row['contract_equiv'], row['days_to_expiration'], r, v ))
-
-        # Calculate Payoff Prices with Adjusted Days to Expiration
-        if exp_adjust > 0:
-           y_exp_list.append(payoff_calculator(x, row['op_type'], row['strike'], row['op_pr'], row['tr_type']
-            , row['contract_equiv'], row['days_to_expiration_adjusted'], r, v ))
-
     def plotter():
                       
         y=0 # Combined Risk graph for Today's Date
@@ -168,11 +199,14 @@ def multi_plotter(spot_range, spot, op_list,
 
                 # Plot Indiivdual Price Leg Payoff Diagram
                 if show_individual:
-                    label=contract+' '+str(abb[row['tr_type']])+' '+str(abb[row['op_type']])+' ST: '+str(row['strike'])
+                    if row['transaction_id'] == 'Current Pos P/L':
+                        label = 'Current Position P/L Record'
+                    else:
+                        label=contract+' '+str(abb[row['tr_type']])+' '+str(abb[row['op_type']])+' ST: '+str(row['strike'])
                     sns.lineplot(x=x, y=y_list[i], label=label, alpha=0.5)
 
                 # Plot Indiivdual Price Leg Payoff Diagram
-                if show_individual and exp_adjust > 0:
+                if show_individual and exp_adjust > 0 and row['transaction_id'] != 'Current Pos P/L':
                     label=contract+' '+str(abb[row['tr_type']])+' '+str(abb[row['op_type']])+' ST: '+str(row['strike'])
                     sns.lineplot(x=x, y=y_exp_list[i], label=label, alpha=0.5)
                 
@@ -197,7 +231,7 @@ def multi_plotter(spot_range, spot, op_list,
                 sns.lineplot(x=x, y=y_tran, label=tran_id, alpha=0.75)
             
             # Plot Future Expiration Transaction Payoff Diagram
-            if show_transaction and exp_adjust > 0:
+            if show_transaction and exp_adjust > 0 and row['transaction_id'] == 'Current Pos P/L':
                 label = tran_id+' as of '+exp_adjust_date
                 sns.lineplot(x=x, y=y_tran_exp, label=label, alpha=0.75)            
         

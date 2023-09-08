@@ -119,3 +119,14 @@ if __name__ == '__main__':
     df_tlt = pd.DataFrame(body, columns=header)
     multi_plotter(spot=93.8,spot_range=10, exp_adjust_date='08-Sep-23', op_list=df_tlt,
                   show_individual=True, show_transaction=True, show_combined=False, graph_header = "Risk Graph")
+    
+if __name__ == '__main__':
+    header = ['transaction_id','strike', 'op_type', 'exp_date',  'op_pr', 'tr_type', 'contracts']
+    body = [
+        ['23-08-02B',   96.5,       'c',  '08-Sep-23',    0.0,       'b',      1,],
+        ['23-08-02B',   97.5,       'c',  '08-Sep-23',    0.0,       's',       1,],
+        ]
+
+    df_tlt = pd.DataFrame(body, columns=header)
+    multi_plotter(spot=95,spot_range=10, exp_adjust_date='08-Sep-23', op_list=df_tlt,
+                  show_individual=True, show_transaction=True, show_combined=False, graph_header = "Risk Graph", y_adjust=2)
